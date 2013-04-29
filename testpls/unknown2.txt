@@ -1,0 +1,3 @@
+[WeirdPlaylist]
+Link8=http://live.example.com:8881/
+Link1=http://live.example.com:8881/

@@ -1,0 +1,38 @@
+<ASX version="3.0" BANNERBAR="AUTO">
+	<ABSTRACT>MA</ABSTRACT>
+	<TITLE>MT</TITLE>
+	<AUTHOR>MAU</AUTHOR>
+	<COPYRIGHT>MC</COPYRIGHT>
+	<LOGO href = "http://ml.ex.com/l.gif" Style = "BANNER" />
+	<MOREINFO href="http://mi.ex.com/mi" />
+	<REPEAT>
+		<ENTRY>
+			<ABSTRACT>E1A</ABSTRACT>
+			<TITLE>E1T</TITLE>
+			<LOGO href = "http://E1.ex.com/l.gif" Style = "BANNER" />
+			<PARAM NAME="HTMLView" VALUE="http://E1.ex.com"/>
+			<ref href="http://E1.st1.ex.com:8881/"/>
+			<ref href="http://E1.st2.ex.com:8882/"/>
+			<PARAM NAME="Location" VALUE="E1L" />
+			<PARAM NAME="Genre" VALUE="E1G" />
+			<PARAM NAME="Homepage" VALUE="http://E1.hp.ex.com" />
+			<AUTHOR>E1AU</AUTHOR>
+			<COPYRIGHT>E1C</COPYRIGHT>
+			<MOREINFO HREF="http://E1.mi.ex.com" />
+		</ENTRY>
+		<ENTRY>
+			<ABSTRACT>E2A</ABSTRACT>
+			<TITLE>E2T</TITLE>
+			<LOGO href = "http://E2.ex.com/l.gif" Style = "BANNER" />
+			<PARAM NAME="HTMLView" VALUE="http://E2.ex.com"/>
+			<ref href="http://E2.st1.ex.com:8881/"/>
+			<ref href="http://E2.st2.ex.com:8882/"/>
+			<PARAM NAME="Location" VALUE="E2L" />
+			<PARAM NAME="Genre" VALUE="E2G" />
+			<PARAM NAME="Homepage" VALUE="http://E2.hp.ex.com" />
+			<AUTHOR>E2AU</AUTHOR>
+			<COPYRIGHT>E2C</COPYRIGHT>
+			<MOREINFO HREF="http://E2.mi.ex.com" />
+		</ENTRY>
+	</REPEAT>
+</ASX>
