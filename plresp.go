@@ -9,10 +9,8 @@ package plparser
 
 import (
 	"errors"
-	// "fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -21,9 +19,6 @@ import (
 
 // Number of byted to read during request
 const playlistReadLimit = 512
-
-// The timeout for HTTP GET
-const getTimeout = 10 * time.Second
 
 // Binary content types
 var BINARY = map[string]bool{
@@ -72,9 +67,9 @@ func getBody(client *http.Client, req *http.Request, retch chan *HttpResp) {
 
 // Create new playlist response
 // Takes URL to potential playlist
-func NewPlaylistRespUrl(url string) (plr *PlaylistResp, err error) {
+func NewPlaylistRespUrl(url string, timeout int) (*PlaylistResp, error) {
 
-	plr = new(PlaylistResp)
+	plr := new(PlaylistResp)
 	plr.Url = url
 	plr.Origin = ORIGIN_URL
 	client := &http.Client{}
@@ -99,7 +94,7 @@ func NewPlaylistRespUrl(url string) (plr *PlaylistResp, err error) {
 		resp = response.resp
 		err = response.err
 
-	case <-time.After(getTimeout):
+	case <-time.After(time.Duration(timeout) * time.Second):
 		resp = nil
 		err = errors.New("Timeout connecting to URL")
 	}
@@ -141,63 +136,69 @@ func NewPlaylistRespUrl(url string) (plr *PlaylistResp, err error) {
 	}
 
 	if err != nil {
-		return
+		return plr, err
 	}
 
 	plr.ContentTypeDetected = http.DetectContentType(plr.Raw)
 
-	return
+	return plr, err
 }
 
 // New playlist response from playlist file
-func NewPlaylistRespFile(path string) (plr *PlaylistResp, err error) {
+func NewPlaylistRespFile(path string) (*PlaylistResp, error) {
 
-	plr = new(PlaylistResp)
+	plr := new(PlaylistResp)
 	plr.Url = path
 	plr.Origin = ORIGIN_FILE
 
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatal("Can not open file: " + path)
+		plr.StatusCode = 500
+		return plr, err
 	}
 
 	plr.Raw, err = ioutil.ReadAll(file)
 	if err != nil {
-		log.Fatal(err)
+		plr.StatusCode = 500
+		return plr, err
 	}
 
 	plr.StatusCode = 200
 	plr.ContentTypeDetected = http.DetectContentType(plr.Raw)
 
-	return
+	return plr, err
 }
 
 // Returns true if playlist content is binary
-func (pr *PlaylistResp) IsBinary() (ret bool) {
+func (pr *PlaylistResp) IsBinary() bool {
+	ret := false
+
 	if _, ok := BINARY[pr.ContentTypeDetected]; ok {
 		ret = true
-	} else {
-		ret = false
 	}
-	return
+
+	return ret
 }
 
 // Returns true if playlist content is HTML
-func (pr *PlaylistResp) IsHtml() (ret bool) {
+func (pr *PlaylistResp) IsHtml() bool {
+	ret := false
+
 	if pr.ContentTypeDetected == FT_HTML {
 		ret = true
-	} else {
-		ret = false
 	}
-	return
+
+	return ret
 }
 
 // Returns true if playlist content is potentially valid playlist
-func (pr *PlaylistResp) IsPotentialPlaylist() (ret bool) {
+func (pr *PlaylistResp) IsPotentialPlaylist() bool {
+
+	ret := false
+
 	if !(pr.IsBinary() || pr.IsHtml()) {
 		ret = true
-	} else {
-		ret = false
 	}
-	return
+
+	return ret
 }

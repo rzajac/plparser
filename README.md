@@ -32,8 +32,8 @@ Run
 
 # Usage
 
-	// Get playlist from URL
-    plr, err := plparser.NewPlaylistRespUrl("http://example.com/some_playlist")
+	// Get playlist from URL with timeout set to 5 seconds
+    plr, err := plparser.NewPlaylistRespUrl("http://example.com/some_playlist", 5)
 
 	// or get playlist from file
 	plr, err := plparser.NewPlaylistRespFile("/path/to/playlist")

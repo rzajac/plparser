@@ -13,7 +13,6 @@ import (
 	"encoding/json"
 	// "fmt"
 	"io"
-	"log"
 	"strings"
 )
 
@@ -42,38 +41,38 @@ type Playlister interface {
 }
 
 // Create new playlist based on PlaylistResponse
-func NewPlaylist(plr *PlaylistResp) (pl *Playlist) {
+func NewPlaylist(plr *PlaylistResp) *Playlist {
 
-	pl = new(Playlist)
+	pl := new(Playlist)
 	pl.Resp = plr
 
 	br := bytes.NewReader(pl.Resp.Raw)
 	pl.lineReader = bufio.NewReader(br)
 
-	return
+	return pl
 }
 
 // The playlist
 type Playlist struct {
-	Type    string
-	Streams []*Stream
-	Resp    *PlaylistResp
+	Type    string        `json:"type"`
+	Streams []*Stream     `json:"streams"`
+	Resp    *PlaylistResp `json:"-"`
 
-	firstLine  string
-	lineReader *bufio.Reader
+	firstLine  string        `json:"-"`
+	lineReader *bufio.Reader `json:"-"`
 }
 
-func (p *Playlist) Parse() string {
+func (p *Playlist) Parse() (string, error) {
+
+	var err error
 
 	// Get first line that is not empty
-	fl, err := p.getLine()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// We use the first line of the playlist
+	// We use the first not empty line of the playlist
 	// to detect playlist type
-	p.firstLine = fl
+	p.firstLine, err = p.getLine()
+	if err != nil {
+		return p.Type, err
+	}
 
 	// Detect playlist and parse it
 	if p.detectType() {
@@ -96,7 +95,7 @@ func (p *Playlist) Parse() string {
 		}
 	}
 
-	return p.Type
+	return p.Type, err
 }
 
 // Detect playlist type based on the first line
@@ -128,14 +127,14 @@ func (p *Playlist) detectType() bool {
 }
 
 // Returns true if playlist type was detected
-func (p *Playlist) IsDetected() (ret bool) {
-	if p.Type == "" {
-		ret = false
-	} else {
+func (p *Playlist) IsDetected() bool {
+	ret := false
+
+	if p.Type != "" {
 		ret = true
 	}
 
-	return
+	return ret
 }
 
 // Get next not empty line form the playlist
@@ -164,11 +163,36 @@ func (p *Playlist) getLine() (line string, err error) {
 }
 
 // Return streams as JSON
-func (p *Playlist) StreamsAsJson() string {
-	j, err := json.MarshalIndent(p.Streams, " ", " ")
+func (p *Playlist) StreamsAsJson() (string, error) {
+	j, err := json.MarshalIndent(p, " ", " ")
 	if err != nil {
-		log.Fatal(err)
+		return "", NewPlParserError(err.Error(), true)
 	}
 
-	return string(j)
+	return string(j), err
+}
+
+type PlParserError struct {
+	doJsonError bool
+	Msg         string `json:"error"`
+}
+
+func NewPlParserError(msg string, doJsonError bool) *PlParserError {
+	plpe := new(PlParserError)
+	plpe.doJsonError = doJsonError
+	plpe.Msg = msg
+
+	return plpe
+}
+
+func (p *PlParserError) Error() (msg string) {
+
+	if p.doJsonError {
+		e, _ := json.MarshalIndent(p, " ", " ")
+		msg = string(e)
+	} else {
+		msg = p.Msg
+	}
+
+	return
 }

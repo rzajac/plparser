@@ -33,8 +33,9 @@ func TestPlaylist(t *testing.T) {
 		plr.Raw = f
 
 		pl := NewPlaylist(plr)
+		pltype, _ := pl.Parse()
 
-		if test.pltype != pl.Parse() {
+		if test.pltype != pltype {
 			t.Fatalf("Expected playlist %s to be of type '%s' but it's '%s'", filePath, test.pltype, pl.Type)
 		}
 
