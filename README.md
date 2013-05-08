@@ -28,7 +28,7 @@ Run
 
 # Benchmarking
 
-    go test -bench=".*" plparser
+    go test -bench=".*" github.com/rzajac/plparser
 
 # Usage
 
