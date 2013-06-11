@@ -37,7 +37,7 @@ func NewPlsParser(raw []byte) (pls *PlsParser) {
 	return
 }
 
-// PlsParser is the PLS parser.
+// PlsParser implements PLS playlist parser.
 type PlsParser struct {
 	raw     []byte
 	reader  *bufio.Reader

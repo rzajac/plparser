@@ -31,7 +31,7 @@ func NewAsfParser(raw []byte) (asf *AsfParser) {
 	return
 }
 
-// AsfParser the ASF parser.
+// AsfParser implements ASF playlist parser.
 type AsfParser struct {
 	raw     []byte
 	reader  *bufio.Reader

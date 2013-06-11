@@ -36,7 +36,7 @@ func NewM3uParser(raw []byte) (m3u *M3uParser) {
 	return
 }
 
-// M3uParser the M3U parser.
+// M3uParser implements M3U playlist parser.
 type M3uParser struct {
 	raw     []byte
 	reader  *bufio.Reader

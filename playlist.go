@@ -16,7 +16,7 @@ import (
 	"strings"
 )
 
-// Audio formats
+// Audio formats.
 var (
 	MPEG = []string{"audio/mpeg"}
 )

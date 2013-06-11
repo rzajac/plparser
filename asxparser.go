@@ -40,7 +40,7 @@ func NewAsxParser(raw []byte) (asx *AsxParser) {
 	return
 }
 
-// AsxParser the ASX parser
+// AsxParser implements ASX playlist parser.
 type AsxParser struct {
 	raw         string
 	Author      string

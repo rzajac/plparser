@@ -20,12 +20,12 @@ import (
 // playlistReadLimit is a number of bytes to read during request.
 const playlistReadLimit = 512
 
-// Binary content types
+// Binary content types.
 var BINARY = map[string]bool{
 	"audio/mpeg":               true,
 	"application/octet-stream": true}
 
-// Text content types
+// Text content types.
 var TEXT = map[string]bool{
 	"text/plain":                true,
 	"text/plain; charset=utf-8": true,
