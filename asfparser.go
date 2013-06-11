@@ -15,11 +15,11 @@ import (
 	"strconv"
 )
 
-// Regexp to match streams in a ASF playlist
+// asfReg is a regular expression to match streams in a ASF playlist.
 var asfReg *regexp.Regexp = regexp.MustCompile(`(?i)ref([0-9]+)(?:\s+)?=(?:\s+)?(.*)`)
 
-// Create new ASF playlist parser
-// Takes playlist text and returns ASF parser
+// NewAsfParser creates new ASF playlist parser.
+// Takes playlist text and returns ASF parser.
 func NewAsfParser(raw []byte) (asf *AsfParser) {
 	asf = new(AsfParser)
 	asf.raw = raw
@@ -31,14 +31,14 @@ func NewAsfParser(raw []byte) (asf *AsfParser) {
 	return
 }
 
-// ASF parser
+// AsfParser the ASF parser.
 type AsfParser struct {
 	raw     []byte
 	reader  *bufio.Reader
 	Streams []*Stream
 }
 
-// Parse ASF playlist
+// Parse parses an ASF playlist.
 func (p *AsfParser) Parse() {
 
 	for {
@@ -65,11 +65,12 @@ func (p *AsfParser) Parse() {
 	}
 }
 
+// GetStreams gets list of streams in a playlist.
 func (p *AsfParser) GetStreams() []*Stream {
 	return p.Streams
 }
 
-// Check if the line matches the regexp for stream url
+// findMatch checks if the line matches the regular expression for stream URL.
 func findMatch(line string, reg *regexp.Regexp) (idx int, stream string) {
 
 	value := reg.FindStringSubmatch(line)

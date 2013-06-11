@@ -7,8 +7,7 @@
 
 package plparser
 
-import ()
-
+// Stream is a struct representing a stream.
 type Stream struct {
 	Index       int    `json:"index"`
 	Title       string `json:"title"`
@@ -25,8 +24,8 @@ type Stream struct {
 	base string
 }
 
-// Make a copy of the stream
-// NOTE: This does not copy private properties
+// makeCopy makes a copy of a stream.
+// NOTE: This does not copy private properties.
 func (s *Stream) makeCopy() (str *Stream) {
 	str = new(Stream)
 	str.Index = s.Index

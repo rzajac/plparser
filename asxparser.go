@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-// Regular expressions to catch various ASX playlist elements
+// asxRegs are regular expressions to catch various ASX playlist elements.
 var asxRegs = []struct {
 	name string
 	reg  *regexp.Regexp
@@ -28,11 +28,11 @@ var asxRegs = []struct {
 	{"MoreInfo", regexp.MustCompile(`(?i)<moreinfo(?:\s+)?href(?:\s+)?=(?:\s+)?(?:"|')(.*?)(?:"|')(?:.*?)/?>(?:</moreinfo(?:\s+)?>)?`)},
 }
 
-// Regexp to find all ENTRY elements
+// asxEntityRegExp regular expression to find all ENTRY elements.
 var asxEntityRegExp *regexp.Regexp = regexp.MustCompile(`(?is)<entry(?:\s+)?>(.*?)</entry(?:\s+)?>`)
 
-// Create new ASX playlist parser
-// Takes playlist text and returns ASX parser
+// NewAsxParser creates new ASX playlist parser.
+// Takes playlist text and returns ASX parser.
 func NewAsxParser(raw []byte) (asx *AsxParser) {
 	asx = new(AsxParser)
 	asx.raw = string(raw)
@@ -40,7 +40,7 @@ func NewAsxParser(raw []byte) (asx *AsxParser) {
 	return
 }
 
-// The ASX parser
+// AsxParser the ASX parser
 type AsxParser struct {
 	raw         string
 	Author      string
@@ -53,7 +53,7 @@ type AsxParser struct {
 	Title       string
 }
 
-//Parse ASX playlist
+// Parse parses an ASX playlist.
 func (a *AsxParser) Parse() {
 
 	// Get all the entries that represent streams
@@ -113,7 +113,7 @@ func (a *AsxParser) Parse() {
 		}
 	}
 
-	// Main body of the playlist is parsed now we
+	// Main body of the playlist has been parsed now we
 	// can parse entries we parsed main body first
 	// to get BASE value if it exists
 	for i, e := range entries {
@@ -126,12 +126,12 @@ func (a *AsxParser) Parse() {
 	}
 }
 
-// Get found streams
+// GetStreams gets list of streams in a playlist.
 func (p *AsxParser) GetStreams() []*Stream {
 	return p.Streams
 }
 
-// Make use of Stream struct to parse entries in the asx playlist
+// parseAsx makes use of Stream structure to parse entries in the ASX playlist.
 func (s *Stream) parseAsx(asxp *AsxParser) []*Stream {
 
 	// Regular expression to match stream URL
@@ -221,7 +221,7 @@ func (s *Stream) parseAsx(asxp *AsxParser) []*Stream {
 
 		newStream := s.makeCopy()
 
-		// Prepend base URL to the stream URL
+		// Prefix base URL to the stream URL
 		if newStream.base != "" {
 			stream[1] = newStream.base + stream[1]
 		}
@@ -230,6 +230,5 @@ func (s *Stream) parseAsx(asxp *AsxParser) []*Stream {
 		streamsToAdd = append(streamsToAdd, newStream)
 	}
 
-	// fmt.Println(streamsToAdd)
 	return streamsToAdd
 }

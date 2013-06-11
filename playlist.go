@@ -26,7 +26,7 @@ var (
 	PL_PLS = "audio/x-scpls"
 )
 
-// Remove new lines and trim
+// fixString removes new lines and trims a string.
 func fixString(s string) string {
 	v := strings.Replace(s, "\r\n", "", -1)
 	v = strings.Replace(v, "\n", "", -1)
@@ -35,12 +35,15 @@ func fixString(s string) string {
 	return v
 }
 
+// Playlister is an interface all playlist parsers must implement.
 type Playlister interface {
+	// Parse parses a playlist.
 	Parse()
+	// GetStreams gets list of streams in a playlist.
 	GetStreams() []*Stream
 }
 
-// Create new playlist based on PlaylistResponse
+// NewPlaylist creates new playlist based on PlaylistResponse.
 func NewPlaylist(plr *PlaylistResp) *Playlist {
 
 	pl := new(Playlist)
@@ -52,7 +55,7 @@ func NewPlaylist(plr *PlaylistResp) *Playlist {
 	return pl
 }
 
-// The playlist
+// Playlist the playlist.
 type Playlist struct {
 	Type    string        `json:"type"`
 	Streams []*Stream     `json:"streams"`
@@ -98,7 +101,7 @@ func (p *Playlist) Parse() (string, error) {
 	return p.Type, err
 }
 
-// Detect playlist type based on the first line
+// detectType detects playlist type based on its first not empty line.
 func (p *Playlist) detectType() bool {
 
 	header := strings.ToLower(p.firstLine)
@@ -126,7 +129,7 @@ func (p *Playlist) detectType() bool {
 	return p.IsDetected()
 }
 
-// Returns true if playlist type was detected
+// IsDetected returns true if playlist type was detected.
 func (p *Playlist) IsDetected() bool {
 	ret := false
 
@@ -137,7 +140,7 @@ func (p *Playlist) IsDetected() bool {
 	return ret
 }
 
-// Get next not empty line form the playlist
+// getLine gets next not empty line form a playlist.
 func (p *Playlist) getLine() (line string, err error) {
 
 	for {
@@ -162,7 +165,7 @@ func (p *Playlist) getLine() (line string, err error) {
 	return
 }
 
-// Return streams as JSON
+// StreamsAsJson returns streams as JSON.
 func (p *Playlist) StreamsAsJson() (string, error) {
 	j, err := json.MarshalIndent(p, " ", " ")
 	if err != nil {
@@ -172,11 +175,13 @@ func (p *Playlist) StreamsAsJson() (string, error) {
 	return string(j), err
 }
 
+// PlParserError 
 type PlParserError struct {
 	doJsonError bool
 	Msg         string `json:"error"`
 }
 
+// NewPlParserError creates new error.
 func NewPlParserError(msg string, doJsonError bool) *PlParserError {
 	plpe := new(PlParserError)
 	plpe.doJsonError = doJsonError
@@ -185,6 +190,7 @@ func NewPlParserError(msg string, doJsonError bool) *PlParserError {
 	return plpe
 }
 
+// Error returns error message.
 func (p *PlParserError) Error() (msg string) {
 
 	if p.doJsonError {

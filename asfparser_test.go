@@ -8,7 +8,6 @@
 package plparser
 
 import (
-	// "regexp"
 	"testing"
 )
 

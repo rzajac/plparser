@@ -5,6 +5,7 @@
 //
 // Licensed under the MIT license
 
+// Package plparser provides primitives to parse PLS, ASX, ASF and M3U playlists.
 package plparser
 
 import (
@@ -16,8 +17,7 @@ import (
 	"strconv"
 )
 
-// Regular expressions to match interesting parts of
-// PLS playlist
+// plsRegs regular expressions to match interesting parts of PLS playlist.
 var plsRegs = []struct {
 	name string
 	reg  *regexp.Regexp
@@ -25,8 +25,8 @@ var plsRegs = []struct {
 	{"Title", regexp.MustCompile(`(?is)title([0-9]+)(?:\s+)?=(?:\s+)?(.*)`)},
 	{"Url", regexp.MustCompile(`(?i)file([0-9]+)(?:\s+)?=(?:\s+)?(.*)`)}}
 
-// Create new PLS playlist parser
-// Takes playlist text and returns PLS parser
+// NewPlsParser creates new PLS playlist parser.
+// Takes playlist text and returns PLS parser.
 func NewPlsParser(raw []byte) (pls *PlsParser) {
 	pls = new(PlsParser)
 	pls.raw = raw
@@ -37,14 +37,14 @@ func NewPlsParser(raw []byte) (pls *PlsParser) {
 	return
 }
 
-// PLS parser
+// PlsParser is the PLS parser.
 type PlsParser struct {
 	raw     []byte
 	reader  *bufio.Reader
 	Streams []*Stream
 }
 
-// Parse PLS playlist
+// Parse parses a PLS playlist.
 func (p *PlsParser) Parse() {
 
 	var titles = make(map[int]string, 10)
@@ -98,6 +98,7 @@ func (p *PlsParser) Parse() {
 	}
 }
 
+// GetStreams gets list of streams in a playlist.
 func (p *PlsParser) GetStreams() []*Stream {
 	return p.Streams
 }

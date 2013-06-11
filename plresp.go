@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-// Number of byted to read during request
+// playlistReadLimit is a number of bytes to read during request.
 const playlistReadLimit = 512
 
 // Binary content types
@@ -37,7 +37,7 @@ var TEXT = map[string]bool{
 	"audio/x-mpegurl":           true, // M3U playlist
 }
 
-// The playlist response
+// PlaylistResp is the playlist response.
 type PlaylistResp struct {
 	Url                 string
 	StatusCode          int
@@ -47,13 +47,13 @@ type PlaylistResp struct {
 	Origin              string
 }
 
-// Used to send response through channel
+// HttpResp is used to send response through channel.
 type HttpResp struct {
 	resp *http.Response
 	err  error
 }
 
-// Do HTTP GET and send response on return channel
+// getBody does HTTP GET and sends response on return channel.
 func getBody(client *http.Client, req *http.Request, retch chan *HttpResp) {
 
 	resp, err := client.Do(req)
@@ -65,8 +65,8 @@ func getBody(client *http.Client, req *http.Request, retch chan *HttpResp) {
 	retch <- r
 }
 
-// Create new playlist response
-// Takes URL to potential playlist
+// NewPlaylistRespUrl creates new playlist response.
+// Takes URL to potential playlist.
 func NewPlaylistRespUrl(url string, timeout int) (*PlaylistResp, error) {
 
 	plr := new(PlaylistResp)
@@ -144,7 +144,7 @@ func NewPlaylistRespUrl(url string, timeout int) (*PlaylistResp, error) {
 	return plr, err
 }
 
-// New playlist response from playlist file
+// NewPlaylistRespFile creates new playlist response from playlist file.
 func NewPlaylistRespFile(path string) (*PlaylistResp, error) {
 
 	plr := new(PlaylistResp)
@@ -169,7 +169,7 @@ func NewPlaylistRespFile(path string) (*PlaylistResp, error) {
 	return plr, err
 }
 
-// Returns true if playlist content is binary
+// IsBinary returns true if playlist content is binary.
 func (pr *PlaylistResp) IsBinary() bool {
 	ret := false
 
@@ -180,7 +180,7 @@ func (pr *PlaylistResp) IsBinary() bool {
 	return ret
 }
 
-// Returns true if playlist content is HTML
+// IsHtml returns true if playlist content is HTML.
 func (pr *PlaylistResp) IsHtml() bool {
 	ret := false
 
@@ -191,7 +191,7 @@ func (pr *PlaylistResp) IsHtml() bool {
 	return ret
 }
 
-// Returns true if playlist content is potentially valid playlist
+// IsPotentialPlaylist returns true if playlist content is potentially valid playlist.
 func (pr *PlaylistResp) IsPotentialPlaylist() bool {
 
 	ret := false

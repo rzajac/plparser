@@ -24,8 +24,8 @@ func isUrl(line string) (is bool) {
 	return
 }
 
-// Create new M3U playlist parser
-// Takes playlist text and returns M3U parser
+// NewM3uParser creates new M3U playlist parser.
+// Takes playlist text and returns M3U parser.
 func NewM3uParser(raw []byte) (m3u *M3uParser) {
 	m3u = new(M3uParser)
 	m3u.raw = raw
@@ -36,14 +36,14 @@ func NewM3uParser(raw []byte) (m3u *M3uParser) {
 	return
 }
 
-// M3U parser
+// M3uParser the M3U parser.
 type M3uParser struct {
 	raw     []byte
 	reader  *bufio.Reader
 	Streams []*Stream
 }
 
-// Parse M3U playlist
+// Parse parses a M3U playlist.
 func (p *M3uParser) Parse() {
 	var idx int
 
@@ -70,6 +70,7 @@ func (p *M3uParser) Parse() {
 	}
 }
 
+// GetStreams gets list of streams in a playlist.
 func (p *M3uParser) GetStreams() []*Stream {
 	return p.Streams
 }
