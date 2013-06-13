@@ -17,9 +17,6 @@ import (
 	"time"
 )
 
-// playlistReadLimit is a number of bytes to read during request.
-const playlistReadLimit = 512
-
 // Binary content types.
 var BINARY = map[string]bool{
 	"audio/mpeg":               true,
@@ -37,17 +34,7 @@ var TEXT = map[string]bool{
 	"audio/x-mpegurl":           true, // M3U playlist
 }
 
-// PlaylistResp is the playlist response.
-type PlaylistResp struct {
-	Url                 string
-	StatusCode          int
-	ContentType         string
-	ContentTypeDetected string
-	Raw                 []byte
-	Origin              string
-}
-
-// HttpResp is used to send response through channel.
+// HttpResp is used to send response through typed channel.
 type HttpResp struct {
 	resp *http.Response
 	err  error
@@ -65,8 +52,24 @@ func getBody(client *http.Client, req *http.Request, retch chan *HttpResp) {
 	retch <- r
 }
 
-// NewPlaylistRespUrl creates new playlist response.
-// Takes URL to potential playlist.
+// PlaylistResp the playlist response.
+type PlaylistResp struct {
+	// Url to the playlist. For files this is a absolute path.
+	Url string
+	// StatusCode the HTTP response code.
+	StatusCode int
+	// ContentType type from HTTP response headers.
+	ContentType string
+	// ContentTypeDetected holds return value of http.DetectContentType().
+	ContentTypeDetected string
+	// Raw is the raw response. If the response was detected as binary it
+	// has only first playlistReadLimit bytes.
+	Raw []byte
+	// Origin is where the playlist came from: ORIGIN_FILE, ORIGIN_URL
+	Origin string
+}
+
+// NewPlaylistRespUrl creates new playlist response. Takes URL to potential playlist.
 func NewPlaylistRespUrl(url string, timeout int) (*PlaylistResp, error) {
 
 	plr := new(PlaylistResp)
@@ -87,7 +90,7 @@ func NewPlaylistRespUrl(url string, timeout int) (*PlaylistResp, error) {
 
 	go getBody(client, req, retch)
 
-	// Wait for response or give up after getTimeout
+	// Wait for response or give up after timeout
 	select {
 
 	case response = <-retch:
@@ -96,18 +99,15 @@ func NewPlaylistRespUrl(url string, timeout int) (*PlaylistResp, error) {
 
 	case <-time.After(time.Duration(timeout) * time.Second):
 		resp = nil
-		err = errors.New("Timeout connecting to URL")
+		err = errors.New("Timeout connecting to URL.")
 	}
 
 	if resp == nil {
-		strErr := err.Error()
-
 		// This means that ShoutCast server responded with its header
 		// which is not recognized by http package.
 		// The header is usually in the form of ICY 200 OK
-		// In this case we set the response to be 200 but containing
-		// binary data.
-		if strings.Contains(strErr, "malformed HTTP version \"ICY\"") {
+		// In this case we set the response to be 200 but containing binary data.
+		if strings.Contains(err.Error(), "malformed HTTP version \"ICY\"") {
 			plr.StatusCode = 200
 			plr.ContentType = "application/octet-stream"
 			plr.ContentTypeDetected = "application/octet-stream"
@@ -126,7 +126,7 @@ func NewPlaylistRespUrl(url string, timeout int) (*PlaylistResp, error) {
 	plr.StatusCode = resp.StatusCode
 	plr.ContentType = resp.Header.Get("Content-Type")
 
-	// If its text response we read whole content
+	// If it's text response we read whole content
 	if _, ok := TEXT[plr.ContentType]; ok {
 		plr.Raw, err = ioutil.ReadAll(resp.Body)
 	} else {
@@ -144,7 +144,7 @@ func NewPlaylistRespUrl(url string, timeout int) (*PlaylistResp, error) {
 	return plr, err
 }
 
-// NewPlaylistRespFile creates new playlist response from playlist file.
+// NewPlaylistRespFile creates new playlist response from local file.
 func NewPlaylistRespFile(path string) (*PlaylistResp, error) {
 
 	plr := new(PlaylistResp)
@@ -193,7 +193,6 @@ func (pr *PlaylistResp) IsHtml() bool {
 
 // IsPotentialPlaylist returns true if playlist content is potentially valid playlist.
 func (pr *PlaylistResp) IsPotentialPlaylist() bool {
-
 	ret := false
 
 	if !(pr.IsBinary() || pr.IsHtml()) {

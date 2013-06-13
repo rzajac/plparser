@@ -18,24 +18,23 @@ import (
 // asfReg is a regular expression to match streams in a ASF playlist.
 var asfReg *regexp.Regexp = regexp.MustCompile(`(?i)ref([0-9]+)(?:\s+)?=(?:\s+)?(.*)`)
 
-// NewAsfParser creates new ASF playlist parser.
-// Takes playlist text and returns ASF parser.
-func NewAsfParser(raw []byte) (asf *AsfParser) {
-	asf = new(AsfParser)
+// AsfParser implements ASF playlist parser.
+type AsfParser struct {
+	raw     []byte        // Raw contents of a playlist
+	reader  *bufio.Reader //
+	Streams []*Stream     // The array of found strams
+}
+
+// NewAsfParser returns new ASF playlist parser. Takes playlist raw content to parse.
+func NewAsfParser(raw []byte) *AsfParser {
+	asf := new(AsfParser)
 	asf.raw = raw
 	asf.Streams = make([]*Stream, 0, 10)
 
 	// Create a reader
 	br := bytes.NewReader(asf.raw)
 	asf.reader = bufio.NewReader(br)
-	return
-}
-
-// AsfParser implements ASF playlist parser.
-type AsfParser struct {
-	raw     []byte
-	reader  *bufio.Reader
-	Streams []*Stream
+	return asf
 }
 
 // Parse parses an ASF playlist.
@@ -52,9 +51,8 @@ func (p *AsfParser) Parse() {
 
 		if streamUrl != "" {
 
-			stream := new(Stream)
+			stream := NewStream(idx)
 			stream.Url = streamUrl
-			stream.Index = idx
 
 			p.Streams = append(p.Streams, stream)
 		}
@@ -65,7 +63,7 @@ func (p *AsfParser) Parse() {
 	}
 }
 
-// GetStreams gets list of streams in a playlist.
+// GetStreams gets list of streams found in the playlist.
 func (p *AsfParser) GetStreams() []*Stream {
 	return p.Streams
 }

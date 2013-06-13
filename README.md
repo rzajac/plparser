@@ -38,23 +38,23 @@ Run
 	// or get playlist from file
 	plr, err := plparser.NewPlaylistRespFile("/path/to/playlist")
 
-	if err := nil {
+	if err != nil {
 		// Handle error
 	}
 
 	if !(plr.StatusCode >= 200 && plr.StatusCode < 300) {
-		// Handle error
+		// Handle HTTP error
 	}
 
-	if !plr.IsPotentialPlaylist() {
-		// File or URL is not a playlist
-	} else {
+	if plr.IsPotentialPlaylist() {
 		pl := plparser.NewPlaylist(plr)
 		pl.Parse()
 
 		// If everything goes well
 		// pl.Streams will have a list of streams
 		// see stream.go
+	} else {
+		// File or URL is not a playlist
 	}
 
 # TODO

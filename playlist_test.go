@@ -1,3 +1,10 @@
+// Part of the Go playlist parser package
+//
+// Copyright 2013 Rafal Zajac rzajac<at>gmail<dot>com. All rights reserved.
+// http://github.com/rzajac/plparser
+//
+// Licensed under the MIT license
+
 package plparser
 
 import (

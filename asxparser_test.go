@@ -8,6 +8,7 @@
 package plparser
 
 import (
+	// "fmt"
 	"regexp"
 	"strconv"
 	"testing"
@@ -41,7 +42,7 @@ func TestAsxRegExp(t *testing.T) {
 		case "Url":
 			urlreg = reg.reg
 
-		case "base":
+		case "Base":
 			basereg = reg.reg
 
 		case "MoreInfo":

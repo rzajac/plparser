@@ -11,7 +11,6 @@ package plparser
 import (
 	"bufio"
 	"bytes"
-	// "fmt"
 	"io"
 	"regexp"
 	"strconv"
@@ -25,23 +24,22 @@ var plsRegs = []struct {
 	{"Title", regexp.MustCompile(`(?is)title([0-9]+)(?:\s+)?=(?:\s+)?(.*)`)},
 	{"Url", regexp.MustCompile(`(?i)file([0-9]+)(?:\s+)?=(?:\s+)?(.*)`)}}
 
-// NewPlsParser creates new PLS playlist parser.
-// Takes playlist text and returns PLS parser.
-func NewPlsParser(raw []byte) (pls *PlsParser) {
-	pls = new(PlsParser)
-	pls.raw = raw
-	pls.Streams = make([]*Stream, 0, 10)
-
-	br := bytes.NewReader(pls.raw)
-	pls.reader = bufio.NewReader(br)
-	return
-}
-
 // PlsParser implements PLS playlist parser.
 type PlsParser struct {
 	raw     []byte
 	reader  *bufio.Reader
 	Streams []*Stream
+}
+
+// NewPlsParser returns new PLS playlist parser. Takes playlist raw content to parse.
+func NewPlsParser(raw []byte) *PlsParser {
+	pls := new(PlsParser)
+	pls.raw = raw
+	pls.Streams = make([]*Stream, 0, 10)
+
+	br := bytes.NewReader(pls.raw)
+	pls.reader = bufio.NewReader(br)
+	return pls
 }
 
 // Parse parses a PLS playlist.
@@ -68,9 +66,8 @@ func (p *PlsParser) Parse() {
 
 				if s.name == "Url" {
 
-					stream := new(Stream)
+					stream := NewStream(idx)
 					stream.Url = v
-					stream.Index = idx
 
 					if title, ok := titles[idx]; ok {
 						stream.Title = title
@@ -84,7 +81,6 @@ func (p *PlsParser) Parse() {
 						titles[idx] = v
 					}
 				}
-
 			}
 		}
 
@@ -98,7 +94,7 @@ func (p *PlsParser) Parse() {
 	}
 }
 
-// GetStreams gets list of streams in a playlist.
+// GetStreams gets list of found streams in the playlist.
 func (p *PlsParser) GetStreams() []*Stream {
 	return p.Streams
 }

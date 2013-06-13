@@ -26,15 +26,6 @@ var (
 	PL_PLS = "audio/x-scpls"
 )
 
-// fixString removes new lines and trims a string.
-func fixString(s string) string {
-	v := strings.Replace(s, "\r\n", "", -1)
-	v = strings.Replace(v, "\n", "", -1)
-	v = strings.Replace(v, "\r", "", -1)
-	v = strings.TrimSpace(v)
-	return v
-}
-
 // Playlister is an interface all playlist parsers must implement.
 type Playlister interface {
 	// Parse parses a playlist.
@@ -141,13 +132,16 @@ func (p *Playlist) IsDetected() bool {
 }
 
 // getLine gets next not empty line form a playlist.
-func (p *Playlist) getLine() (line string, err error) {
+func (p *Playlist) getLine() (string, error) {
+
+	var err error
+	var line string
 
 	for {
 		line, err = p.lineReader.ReadString('\n')
 
 		if err != nil && err != io.EOF {
-			return
+			return line, err
 		}
 
 		line = fixString(line)
@@ -162,7 +156,7 @@ func (p *Playlist) getLine() (line string, err error) {
 		err = nil
 	}
 
-	return
+	return line, err
 }
 
 // StreamsAsJson returns streams as JSON.
@@ -175,7 +169,7 @@ func (p *Playlist) StreamsAsJson() (string, error) {
 	return string(j), err
 }
 
-// PlParserError 
+// PlParserError
 type PlParserError struct {
 	doJsonError bool
 	Msg         string `json:"error"`

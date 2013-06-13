@@ -8,7 +8,7 @@
 package plparser
 
 import (
-	// "fmt"
+	"reflect"
 	"regexp"
 	"strings"
 )
@@ -24,33 +24,32 @@ var asxRegs = []struct {
 	{"Author", regexp.MustCompile(`(?is)<author(?:\s+)?>(.*?)</author(?:\s+)?>`)},
 	{"Copyright", regexp.MustCompile(`(?is)<copyright(?:\s+)?>(.*?)</copyright(?:\s+)?>`)},
 	{"Url", regexp.MustCompile(`(?i)<ref(?:\s+)?href(?:\s+)?=(?:\s+)?(?:"|')(.*?)(?:"|')(?:.*?)/?>(?:</ref(?:\s+)?>)?`)},
-	{"base", regexp.MustCompile(`(?i)<base(?:\s+)?href(?:\s+)?=(?:\s+)?(?:"|')(.*?)(?:"|')(?:.*?)/?>(?:</base(?:\s+)?>)?`)},
+	{"Base", regexp.MustCompile(`(?i)<base(?:\s+)?href(?:\s+)?=(?:\s+)?(?:"|')(.*?)(?:"|')(?:.*?)/?>(?:</base(?:\s+)?>)?`)},
 	{"MoreInfo", regexp.MustCompile(`(?i)<moreinfo(?:\s+)?href(?:\s+)?=(?:\s+)?(?:"|')(.*?)(?:"|')(?:.*?)/?>(?:</moreinfo(?:\s+)?>)?`)},
 }
 
 // asxEntityRegExp regular expression to find all ENTRY elements.
 var asxEntityRegExp *regexp.Regexp = regexp.MustCompile(`(?is)<entry(?:\s+)?>(.*?)</entry(?:\s+)?>`)
 
-// NewAsxParser creates new ASX playlist parser.
-// Takes playlist text and returns ASX parser.
-func NewAsxParser(raw []byte) (asx *AsxParser) {
-	asx = new(AsxParser)
-	asx.raw = string(raw)
-	asx.Streams = make([]*Stream, 0, 10)
-	return
-}
-
 // AsxParser implements ASX playlist parser.
 type AsxParser struct {
 	raw         string
 	Author      string
-	base        string
+	Base        string
 	Copyright   string
 	Description string
 	Logo        string
 	MoreInfo    string
 	Streams     []*Stream
 	Title       string
+}
+
+// NewAsxParser returns new ASX playlist parser. Takes playlist raw content to parse.
+func NewAsxParser(raw []byte) *AsxParser {
+	asx := new(AsxParser)
+	asx.raw = string(raw)
+	asx.Streams = make([]*Stream, 0, 10)
+	return asx
 }
 
 // Parse parses an ASX playlist.
@@ -68,70 +67,41 @@ func (a *AsxParser) Parse() {
 	// element names as ENTRY except REF (Url)
 	for _, s := range asxRegs {
 
+		// We skip URLs.
+		// We first have to parse main body.
 		if s.name == "Url" {
 			continue
 		}
 
 		values := s.reg.FindStringSubmatch(a.raw)
-		valuesCount := len(values)
-
-		switch s.name {
-		case "Description":
-			if valuesCount == 2 {
-				a.Description = values[1]
-			}
-
-		case "Title":
-			if valuesCount == 2 {
-				a.Title = values[1]
-			}
-
-		case "Logo":
-			if valuesCount == 2 {
-				a.Logo = values[1]
-			}
-
-		case "Author":
-			if valuesCount == 2 {
-				a.Author = values[1]
-			}
-
-		case "Copyright":
-			if valuesCount == 2 {
-				a.Copyright = values[1]
-			}
-
-		case "base":
-			if valuesCount == 2 {
-				a.base = values[1]
-			}
-
-		case "MoreInfo":
-			if valuesCount == 2 {
-				a.MoreInfo = values[1]
-			}
+		if len(values) != 2 {
+			continue
 		}
+
+		a.setValue(s.name, values[1])
 	}
 
-	// Main body of the playlist has been parsed now we
-	// can parse entries we parsed main body first
-	// to get BASE value if it exists
-	for i, e := range entries {
-
-		str := new(Stream)
-		str.Index = i
-		str.raw = e[1]
-
-		a.Streams = append(a.Streams, str.parseAsx(a)...)
-	}
+	// Main body of the playlist has been parsed.
+	// We parsed main body first to get BASE value if it exists.
+	a.parseEntries(entries)
 }
 
-// GetStreams gets list of streams in a playlist.
+// GetStreams gets list of streams found in the playlist.
 func (p *AsxParser) GetStreams() []*Stream {
 	return p.Streams
 }
 
-// parseAsx makes use of Stream structure to parse entries in the ASX playlist.
+// setValue sets AsxParser structure value by name.
+func (a *AsxParser) setValue(fieldName, value string) {
+	reflect.ValueOf(a).Elem().FieldByName(fieldName).SetString(value)
+}
+
+// getValue gets AsxParser structure field by name.
+func (a *AsxParser) getValue(fieldName string) string {
+	return reflect.ValueOf(a).Elem().FieldByName(fieldName).String()
+}
+
+// parseAsx parses ENTRY nodes in the ASX playlist.
 func (s *Stream) parseAsx(asxp *AsxParser) []*Stream {
 
 	// Regular expression to match stream URL
@@ -148,68 +118,26 @@ func (s *Stream) parseAsx(asxp *AsxParser) []*Stream {
 		}
 
 		values := reg.reg.FindStringSubmatch(s.raw)
-		valuesCount := len(values)
 
-		switch reg.name {
-		case "Description":
-			if valuesCount == 2 {
-				s.Description = values[1]
-			} else {
-				s.Description = asxp.Description
-			}
+		var value string
 
-		case "Title":
-			if valuesCount == 2 {
-				s.Title = values[1]
-			} else {
-				s.Title = asxp.Title
-			}
-
-		case "Logo":
-			if valuesCount == 2 {
-				s.Logo = values[1]
-			} else {
-				s.Logo = asxp.Logo
-			}
-
-		case "Author":
-			if valuesCount == 2 {
-				s.Author = values[1]
-			} else {
-				s.Author = asxp.Author
-			}
-
-		case "Copyright":
-			if valuesCount == 2 {
-				s.Copyright = values[1]
-			} else {
-				s.Copyright = asxp.Copyright
-			}
-
-		case "base":
-			if valuesCount == 2 {
-				s.base = values[1]
-			} else {
-				s.base = asxp.base
-			}
-
-		case "MoreInfo":
-			if valuesCount == 2 {
-				s.MoreInfo = values[1]
-			} else {
-				s.MoreInfo = asxp.MoreInfo
-			}
+		if len(values) == 2 {
+			value = values[1]
+		} else {
+			value = asxp.getValue(reg.name)
 		}
+
+		s.setValue(reg.name, value)
 	}
 
 	// Inherit base for URLs from main playlist body
-	if s.base != "" {
-		s.base = asxp.base
+	if s.Base != "" {
+		s.Base = asxp.Base
 	}
 
 	// Make sure the base ends with "/"
-	if s.base != "" && !strings.HasSuffix(s.base, "/") {
-		s.base += "/"
+	if s.Base != "" && !strings.HasSuffix(s.Base, "/") {
+		s.Base += "/"
 	}
 
 	// Find all the stream URLs
@@ -222,8 +150,8 @@ func (s *Stream) parseAsx(asxp *AsxParser) []*Stream {
 		newStream := s.makeCopy()
 
 		// Prefix base URL to the stream URL
-		if newStream.base != "" {
-			stream[1] = newStream.base + stream[1]
+		if newStream.Base != "" {
+			stream[1] = newStream.Base + stream[1]
 		}
 
 		newStream.Url = stream[1]
@@ -231,4 +159,66 @@ func (s *Stream) parseAsx(asxp *AsxParser) []*Stream {
 	}
 
 	return streamsToAdd
+}
+
+// parseEntries parses ENTRY elements.
+func (a *AsxParser) parseEntries(entries [][]string) {
+
+	// Regular expression to match stream URL
+	var urlr *regexp.Regexp
+	var s *Stream
+
+	// Go over all found entries
+	for idx, entry := range entries {
+
+		s = NewStream(idx)
+
+		// First we parse all the info we can get except the URL to a stream
+		for _, reg := range asxRegs {
+
+			// We do this one last
+			if reg.name == "Url" {
+				urlr = reg.reg
+				continue
+			}
+
+			values := reg.reg.FindStringSubmatch(entry[1])
+
+			var value string
+
+			if len(values) == 2 {
+				value = values[1]
+			} else {
+				value = a.getValue(reg.name)
+			}
+
+			s.setValue(reg.name, value)
+		}
+
+		// Inherit base for URLs from main playlist body
+		if s.Base != "" {
+			s.Base = a.Base
+		}
+
+		// Make sure the base ends with "/"
+		if s.Base != "" && !strings.HasSuffix(s.Base, "/") {
+			s.Base += "/"
+		}
+
+		// Find all the stream URLs
+		streams := urlr.FindAllStringSubmatch(entry[1], -1)
+
+		for _, stream := range streams {
+
+			newStream := s.makeCopy()
+
+			// Prefix base URL to the stream URL
+			if newStream.Base != "" {
+				stream[1] = newStream.Base + stream[1]
+			}
+
+			newStream.Url = stream[1]
+			a.Streams = append(a.Streams, newStream)
+		}
+	}
 }

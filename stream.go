@@ -7,6 +7,10 @@
 
 package plparser
 
+import (
+	"reflect"
+)
+
 // Stream is a struct representing a stream.
 type Stream struct {
 	Index       int    `json:"index"`
@@ -18,16 +22,24 @@ type Stream struct {
 	MoreInfo    string `json:"info"`
 	Url         string `json:"url"`
 
-	// Some private properties to handle parsing
-	// of various playlists
+	// Some unexported properties to handle parsing
+	// of various playlists.
 	raw  string
-	base string
+	Base string
+}
+
+// NewStream returns new stream. Takes stream's index in a playlist.
+func NewStream(index int) *Stream {
+	s := new(Stream)
+	s.Index = index
+	return s
 }
 
 // makeCopy makes a copy of a stream.
-// NOTE: This does not copy private properties.
-func (s *Stream) makeCopy() (str *Stream) {
-	str = new(Stream)
+// NOTE: This does not copy unexported properties.
+func (s *Stream) makeCopy() *Stream {
+
+	str := new(Stream)
 	str.Index = s.Index
 	str.Title = s.Title
 	str.Description = s.Description
@@ -37,5 +49,10 @@ func (s *Stream) makeCopy() (str *Stream) {
 	str.MoreInfo = s.MoreInfo
 	str.Url = s.Url
 
-	return
+	return str
+}
+
+// setValue sets Stream structure value by name.
+func (s *Stream) setValue(fieldName, value string) {
+	reflect.ValueOf(s).Elem().FieldByName(fieldName).SetString(value)
 }

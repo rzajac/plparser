@@ -18,3 +18,6 @@ const (
 	FT_TEXT = "text/plain; charset=utf-8"
 	FT_HTML = "text/html; charset=utf-8"
 )
+
+// playlistReadLimit is a number of bytes to read during request.
+const playlistReadLimit = 512
